@@ -14,14 +14,11 @@ import {
 
 const { knownDevices } = DongleDriver
 
-export type CarplayMessage =
-  | { type: 'plugged'; message?: undefined }
-  | { type: 'unplugged'; message?: undefined }
-  | { type: 'failure'; message?: undefined }
-  | { type: 'audio'; message: AudioData }
-  | { type: 'video'; message: VideoData }
-  | { type: 'media'; message: MediaData }
-  | { type: 'command'; message: Command }
+
+export class Failure {
+}
+
+export type CarplayMessage = Message | Failure
 
 export const isCarplayDongle = (device: USBDevice) => {
   const known = knownDevices.some(
@@ -58,7 +55,7 @@ export const requestDevice = async (): Promise<USBDevice | null> => {
 export default class CarplayWeb {
   private _started: boolean = false
   private _pairTimeout: NodeJS.Timeout | null = null
-  private _frameInterval: NodeJS.Timer | null = null
+  private _frameInterval: ReturnType<typeof setInterval> | null = null
   private _config: DongleConfig
   public dongleDriver: DongleDriver
 
@@ -79,24 +76,20 @@ export default class CarplayWeb {
             phoneTypeConfg?.frameInterval,
           )
         }
-        this.onmessage?.({ type: 'plugged' })
       } else if (message instanceof Unplugged) {
-        this.onmessage?.({ type: 'unplugged' })
       } else if (message instanceof VideoData) {
         this.clearPairTimeout()
-        this.onmessage?.({ type: 'video', message })
       } else if (message instanceof AudioData) {
         this.clearPairTimeout()
-        this.onmessage?.({ type: 'audio', message })
       } else if (message instanceof MediaData) {
         this.clearPairTimeout()
-        this.onmessage?.({ type: 'media', message })
       } else if (message instanceof Command) {
-        this.onmessage?.({ type: 'command', message })
       }
+      this.onmessage?.(message)
     })
     driver.on('failure', () => {
-      this.onmessage?.({ type: 'failure' })
+      console.log('carplay dongle driver failure')
+      this.onmessage?.(new Failure())
     })
     this.dongleDriver = driver
   }
@@ -122,6 +115,9 @@ export default class CarplayWeb {
     const { initialise, start, send } = this.dongleDriver
 
     console.debug('opening device')
+    if (usbDevice.opened) {
+      await usbDevice.close()
+    }
     await usbDevice.open()
     await usbDevice.reset()
 

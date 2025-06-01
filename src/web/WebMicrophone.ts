@@ -17,6 +17,8 @@ export default class WebMicrophone extends EventEmitter {
       .then(() => {
         this.recorder = new AudioWorkletNode(audioContext, 'recorder.worklet')
         this.recorder.port.postMessage(messagePort, [messagePort])
+      }).catch(err => {
+        console.error('Failed to load recorder worklet', err)
       })
   }
 

@@ -11,6 +11,7 @@ import {
   SendBoxSettings,
   SendCommand,
   HeartBeat,
+  SendCloseDongle,
 } from './messages/sendable.js'
 
 const CONFIG_NUMBER = 1
@@ -78,7 +79,7 @@ export const DEFAULT_CONFIG: DongleConfig = {
 export class DriverStateError extends Error {}
 
 export class DongleDriver extends EventEmitter {
-  private _heartbeatInterval: NodeJS.Timer | null = null
+  private _heartbeatInterval: ReturnType<typeof setTimeout> | null = null
   private _device: USBDevice | null = null
   private _inEP: USBEndpoint | null = null
   private _outEP: USBEndpoint | null = null
@@ -248,10 +249,15 @@ export class DongleDriver extends EventEmitter {
         new SendBoolean(config.androidWorkMode, FileAddress.ANDROID_WORK_MODE),
       )
     }
+    console.log('sending CloseDongle')
+    await this.send(new SendCloseDongle())
+    console.log('sending init messages')
     await Promise.all(initMessages.map(this.send))
+    console.log('sending wifiConnect')
     setTimeout(() => {
       this.send(new SendCommand('wifiConnect'))
     }, 1000)
+    console.log('connected')
 
     this.readLoop()
 
