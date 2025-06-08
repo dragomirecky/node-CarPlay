@@ -102,7 +102,6 @@ export class DongleDriver extends EventEmitter {
     try {
       this._device = device
 
-      console.debug('initializing')
       if (!device.opened) {
         throw new DriverStateError('Illegal state - device not opened')
       }
@@ -114,7 +113,6 @@ export class DongleDriver extends EventEmitter {
         )
       }
 
-      console.debug('getting interface')
       const {
         interfaceNumber,
         alternate: { endpoints },
@@ -133,10 +131,8 @@ export class DongleDriver extends EventEmitter {
       this._inEP = inEndpoint
       this._outEP = outEndpoint
 
-      console.debug('claiming')
       await this._device.claimInterface(interfaceNumber)
 
-      console.debug(this._device)
     } catch (err) {
       this.close()
       throw err
@@ -212,6 +208,17 @@ export class DongleDriver extends EventEmitter {
     }
   }
 
+  run = async () => {
+    if (!this._device) {
+      throw new DriverStateError('No device set - call initialise first')
+    }
+    if (!this._device?.opened) {
+      return
+    }
+    this.errorCount = 0
+    this.readLoop()
+  }
+
   start = async (config: DongleConfig) => {
     if (!this._device) {
       throw new DriverStateError('No device set - call initialise first')
@@ -220,7 +227,6 @@ export class DongleDriver extends EventEmitter {
       return
     }
 
-    this.errorCount = 0
     const {
       dpi: _dpi,
       nightMode: _nightMode,
@@ -249,15 +255,11 @@ export class DongleDriver extends EventEmitter {
         new SendBoolean(config.androidWorkMode, FileAddress.ANDROID_WORK_MODE),
       )
     }
-    console.log('sending CloseDongle')
     await this.send(new SendCloseDongle())
-    console.log('sending init messages')
     await Promise.all(initMessages.map(this.send))
-    console.log('sending wifiConnect')
     setTimeout(() => {
       this.send(new SendCommand('wifiConnect'))
     }, 1000)
-    console.log('connected')
 
     this.readLoop()
 
