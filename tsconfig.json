@@ -10,7 +10,8 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "Bundler",
     "sourceMap": true,
-    "declaration": true
+    "declaration": true,
+    "types": ["@types/w3c-web-usb", "@types/audioworklet", "node"]
   },
   "exclude": ["node_modules", "src/web/*"],
   "include": ["src/**/*"]

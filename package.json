@@ -37,9 +37,9 @@
   "devDependencies": {
     "@types/audioworklet": "^0.0.50",
     "@types/jest": "^29.5.4",
-    "@types/node": "^18.11.9",
+    "@types/node": "^18.19.111",
     "@types/node-microphone": "^0.1.1",
-    "@types/w3c-web-usb": "^1.0.6",
+    "@types/w3c-web-usb": "^1.0.10",
     "@types/webaudioapi": "^0.0.27",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",

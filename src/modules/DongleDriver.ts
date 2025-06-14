@@ -1,4 +1,4 @@
-import EventEmitter from 'events'
+import { EventEmitter } from 'events'
 import { MessageHeader, HeaderBuildError } from './messages/common.js'
 import { PhoneType } from './messages/readable.js'
 import {
